@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Balloon Rescue | Premium Edition</title>
+    <style>
+        :root {
+            --primary: #ff9800;
+            --secondary: #2196f3;
+            --danger: #f44336;
+            --success: #4caf50;
+            --bg-dark: #1a2a6c;
+            --accent: #00d2ff;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-attachment: fixed;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header-section {
+            text-align: center;
+            padding: 30px 20px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .wiserobotics-brand {
+            font-weight: 900;
+            letter-spacing: 4px;
+            font-size: 1.2rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .wiserobotics-brand::before, .wiserobotics-brand::after {
+            content: '';
+            height: 2px;
+            width: 30px;
+            background: var(--accent);
+        }
+
+        h1 { 
+            margin: 0; 
+            font-size: 3rem; 
+            letter-spacing: -1px; 
+            background: linear-gradient(to right, #fff, #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-layout {
+            display: flex;
+            gap: 20px;
+            width: 95%;
+            max-width: 1100px;
+            margin-top: 10px;
+            align-items: flex-start;
+        }
+
+        .side-panel {
+            flex: 0 0 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .side-panel-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            opacity: 0.6;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .game-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #hud {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .stat-box { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; margin-bottom: 4px; }
+        .stat-value { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+
+        /* Volume Control Styling */
+        .volume-control-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            background: linear-gradient(to bottom, #87ceeb 0%, #e0f7ff 100%);
+            border: 6px solid #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.6;
+            animation: moveClouds linear infinite;
+        }
+
+        @keyframes moveClouds {
+            from { transform: translateX(800px); }
+            to { transform: translateX(-250px); }
+        }
+
+        #balloon {
+            position: absolute;
+            width: 100px;
+            height: 130px;
+            left: 300px;
+            top: 20px;
+            transition: transform 0.1s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+            z-index: 10;
+        }
+
+        .balloon-graphic {
+            width: 80px;
+            height: 95px;
+            background: radial-gradient(circle at 30% 30%, #ff5252, #c62828);
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 900;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .balloon-basket {
+            width: 30px;
+            height: 20px;
+            background: #795548;
+            border-radius: 2px;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .balloon-basket::before, .balloon-basket::after {
+            content: '';
+            position: absolute;
+            top: -15px;
+            width: 2px;
+            height: 15px;
+            background: #fff;
+        }
+        .balloon-basket::before { left: 5px; transform: rotate(-15deg); }
+        .balloon-basket::after { right: 5px; transform: rotate(15deg); }
+
+        #fireContainer {
+            position: absolute;
+            bottom: -10px;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 5;
+        }
+
+        .flame {
+            width: 40px;
+            height: 40px;
+            background: #ff5722;
+            border-radius: 50% 0 50% 50%;
+            transform: rotate(-45deg);
+            animation: flicker 0.1s infinite alternate;
+            box-shadow: 0 0 20px #ff5722;
+        }
+
+        @keyframes flicker {
+            0% { transform: rotate(-45deg) scale(1); }
+            100% { transform: rotate(-45deg) scale(1.1); background: #ffeb3b; }
+        }
+
+        #controls {
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="number"] {
+            padding: 15px;
+            font-size: 24px;
+            width: 150px;
+            text-align: center;
+            border-radius: 12px;
+            border: 3px solid transparent;
+            background: white;
+            color: #333;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input[type="number"]:focus { border-color: var(--primary); box-shadow: 0 0 15px var(--primary); }
+
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+
+        button.primary { background: var(--primary); color: white; }
+        
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            text-align: left;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .mode-btn.active {
+            background: var(--secondary);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .volume-panel {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 900;
+            text-align: center;
+            pointer-events: none;
+            z-index: 100;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            z-index: 20;
+        }
+
+        @media (max-width: 800px) {
+            .main-layout { flex-direction: column; }
+            .side-panel { flex: 1; width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .mode-btn { flex: 1; min-width: 120px; }
+        }
+    </style>
+</head>
+<body onclick="handleUserInteraction()">
+
+<!-- Audio Assets -->
+<audio id="bgMusic" loop preload="auto">
+    <source src="https://actions.google.com/sounds/v1/science_fiction/techno_background.ogg" type="audio/ogg">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+</audio>
+<audio id="welcomeSound" preload="auto">
+    <source src="welcome.mp3" type="audio/mpeg">
+    <!-- Fallback if welcome.mp3 is missing -->
+    <source src="https://actions.google.com/sounds/v1/cartoon/clown_horn.ogg" type="audio/ogg">
+</audio>
+<audio id="loseSound" preload="auto">
+    <source src="loose.WAV" type="audio/ogg">
+</audio>
+
+<div class="header-section">
+    <div class="wiserobotics-brand">WISEROBOTICS</div>
+    <h1>BALLOON RESCUE</h1>
+</div>
+
+<div class="main-layout">
+    <aside class="side-panel">
+        <div class="side-panel-title">Select Subject</div>
+        <button id="btn-add" class="mode-btn active" onclick="selectMode('add')">Addition</button>
+        <button id="btn-sub" class="mode-btn" onclick="selectMode('sub')">Subtraction</button>
+        <button id="btn-mul" class="mode-btn" onclick="selectMode('mul')">Multiplication</button>
+        <button id="btn-div" class="mode-btn" onclick="selectMode('div')">Division</button>
+        
+        <div class="volume-panel">
+            <div class="side-panel-title">Welcome Volume</div>
+            <div class="volume-control-wrapper">
+                <span id="welcomeVolDisplay">100%</span>
+                <input type="range" id="welcomeVolSlider" min="0" max="1" step="0.01" value="1" oninput="updateWelcomeVolume(this.value)">
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+             <button class="primary" style="width: 100%; font-size: 1rem; padding: 15px 0;" onclick="startGame()">START GAME</button>
+        </div>
+    </aside>
+
+    <main class="game-wrapper">
+        <div id="hud">
+            <div class="stat-box">
+                <span class="stat-label">Score</span>
+                <span id="score" class="stat-value">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Level</span>
+                <span id="level" class="stat-value">1</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Lives</span>
+                <span id="lives" class="stat-value">3</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Best</span>
+                <span id="highScore" class="stat-value">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Master Volume</span>
+                <div class="volume-control-wrapper">
+                    <span id="masterVolDisplay" style="font-size: 0.8rem; font-weight: bold; color: var(--accent);">100%</span>
+                    <input type="range" id="masterVolSlider" min="0" max="1" step="0.01" value="1" oninput="updateMasterVolume(this.value)">
+                </div>
+            </div>
+        </div>
+
+        <div id="gameContainer">
+            <div id="balloon">
+                <div class="balloon-graphic" id="problem">?</div>
+                <div class="balloon-basket"></div>
+            </div>
+            <div id="fireContainer"></div>
+            <div id="message"></div>
+        </div>
+
+        <div id="controls">
+            <div class="input-group">
+                <input type="number" id="answer" placeholder="?" autocomplete="off">
+                <button class="primary" onclick="submitAnswer()">SUBMIT</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    let score = 0;
+    let highScore = 0;
+    let level = 1;
+    let lives = 3;
+    let correctAnswer = 0;
+    let speed = 1.0;
+    let mode = "add";
+    let balloonY = 20;
+    let gameInterval = null;
+    let isGameOver = false;
+    
+    // Audio States
+    let masterVolume = 1.0;
+    let welcomeVolume = 1.0;
+    let welcomePlayed = false;
+
+    const balloonEl = document.getElementById('balloon');
+    const problemEl = document.getElementById('problem');
+    const answerInput = document.getElementById('answer');
+    const msgEl = document.getElementById('message');
+    const gameContainer = document.getElementById('gameContainer');
+    const bgMusic = document.getElementById('bgMusic');
+    const welcomeSound = document.getElementById('welcomeSound');
+    const loseSound = document.getElementById('loseSound');
+    const masterVolDisplay = document.getElementById('masterVolDisplay');
+    const welcomeVolDisplay = document.getElementById('welcomeVolDisplay');
+
+    // Create environment
+    for(let i=0; i<5; i++) createCloud();
+    const fireContainer = document.getElementById('fireContainer');
+    for(let i=0; i<10; i++) {
+        const f = document.createElement('div');
+        f.className = 'flame';
+        f.style.left = (i * 10) + '%';
+        f.style.animationDelay = (Math.random() * 0.5) + 's';
+        fireContainer.appendChild(f);
+    }
+
+    function createCloud() {
+        const cloud = document.createElement('div');
+        cloud.className = 'cloud';
+        const width = 60 + Math.random() * 100;
+        cloud.style.width = width + 'px';
+        cloud.style.height = (width * 0.4) + 'px';
+        cloud.style.top = Math.random() * 250 + 'px';
+        cloud.style.animationDuration = (10 + Math.random() * 15) + 's';
+        cloud.style.animationDelay = -(Math.random() * 15) + 's';
+        gameContainer.appendChild(cloud);
+    }
+
+    function handleUserInteraction() {
+        if (!welcomePlayed) {
+            welcomeSound.volume = welcomeVolume * masterVolume;
+            welcomeSound.play().catch(e => console.log("Welcome sound blocked:", e));
+            welcomePlayed = true;
+        }
+    }
+
+    function selectMode(m) {
+        mode = m;
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${m}`).classList.add('active');
+        if(!isGameOver && gameInterval) generateQuestion();
+    }
+
+    function generateQuestion() {
+        let max = level * 8;
+        let a, b;
+        switch(mode) {
+            case 'add': a = Math.floor(Math.random()*max)+1; b = Math.floor(Math.random()*max)+1; correctAnswer = a+b; problemEl.innerText = `${a}+${b}`; break;
+            case 'sub': a = Math.floor(Math.random()*max)+max; b = Math.floor(Math.random()*max)+1; correctAnswer = a-b; problemEl.innerText = `${a}-${b}`; break;
+            case 'mul': a = Math.floor(Math.random()*(level+2))+1; b = Math.floor(Math.random()*10)+1; correctAnswer = a*b; problemEl.innerText = `${a}×${b}`; break;
+            case 'div': b = Math.floor(Math.random()*8)+1; correctAnswer = Math.floor(Math.random()*10)+1; a = b*correctAnswer; problemEl.innerText = `${a}÷${b}`; break;
+        }
+    }
+
+    // Volume Adjustment Logic
+    function updateMasterVolume(val) {
+        masterVolume = parseFloat(val);
+        masterVolDisplay.innerText = Math.round(masterVolume * 100) + "%";
+        
+        // Apply immediately to current playing sounds
+        bgMusic.volume = masterVolume;
+        loseSound.volume = masterVolume;
+        welcomeSound.volume = welcomeVolume * masterVolume;
+    }
+
+    function updateWelcomeVolume(val) {
+        welcomeVolume = parseFloat(val);
+        welcomeVolDisplay.innerText = Math.round(welcomeVolume * 100) + "%";
+        
+        // Apply immediately to welcome sound (factoring in master)
+        welcomeSound.volume = welcomeVolume * masterVolume;
+    }
+
+    function startGame() {
+        bgMusic.volume = masterVolume;
+        bgMusic.currentTime = 0;
+        bgMusic.play().catch(e => console.error("Music play blocked:", e));
+
+        score = 0; level = 1; lives = 3; speed = 1.0; balloonY = -150; isGameOver = false;
+        updateHUD();
+        msgEl.innerText = "";
+        answerInput.value = "";
+        answerInput.focus();
+        generateQuestion();
+        if (gameInterval) clearInterval(gameInterval);
+        gameInterval = setInterval(update, 20);
+    }
+
+    function update() {
+        if (isGameOver) return;
+        balloonY += speed;
+        balloonEl.style.top = balloonY + "px";
+        balloonEl.style.transform = `translateX(${Math.sin(Date.now() / 500) * 15}px)`;
+        if (balloonY > 320) triggerMistake();
+    }
+
+    function triggerMistake() {
+        lives--;
+        updateHUD();
+        gameContainer.classList.add('shake');
+        setTimeout(() => gameContainer.classList.remove('shake'), 500);
+        if (lives <= 0) endGame(); else resetBalloon();
+    }
+
+    function submitAnswer() {
+        if (isGameOver) return;
+        if (parseInt(answerInput.value) === correctAnswer) {
+            celebrate();
+            score++;
+            if (score > highScore) highScore = score;
+            if (score % 5 === 0) { level++; speed += 0.2; }
+            updateHUD();
+            resetBalloon();
+        } else {
+            answerInput.style.backgroundColor = '#ffcdd2';
+            setTimeout(() => answerInput.style.backgroundColor = 'white', 300);
+        }
+        answerInput.value = "";
+        answerInput.focus();
+    }
+
+    function resetBalloon() {
+        balloonY = -140;
+        balloonEl.style.left = (Math.random() * (gameContainer.offsetWidth - 120) + 10) + "px";
+        generateQuestion();
+    }
+
+    function celebrate() {
+        for(let i=0; i<10; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.style.left = (parseInt(balloonEl.style.left) + 50) + 'px';
+            c.style.top = (balloonY + 50) + 'px';
+            c.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 60%)`;
+            gameContainer.appendChild(c);
+            let vx = (Math.random()-0.5)*10, vy = (Math.random()-0.5)*10, op = 1;
+            const anim = setInterval(() => {
+                c.style.left = (parseFloat(c.style.left)+vx)+'px'; c.style.top = (parseFloat(c.style.top)+vy)+'px';
+                op -= 0.02; c.style.opacity = op;
+                if(op <= 0) { clearInterval(anim); c.remove(); }
+            }, 20);
+        }
+    }
+
+    function updateHUD() {
+        document.getElementById("score").innerText = score;
+        document.getElementById("level").innerText = level;
+        document.getElementById("lives").innerText = lives;
+        document.getElementById("highScore").innerText = highScore;
+    }
+
+    function endGame() {
+        isGameOver = true;
+        clearInterval(gameInterval);
+        bgMusic.pause();
+        
+        loseSound.volume = masterVolume;
+        loseSound.play().catch(e => console.log("Lose sound blocked"));
+        
+        msgEl.innerHTML = `<div style="color:var(--danger)">GAME OVER</div><div style="font-size:1.5rem">Final Score: ${score}</div>`;
+        balloonEl.style.top = "-200px";
+    }
+
+    answerInput.addEventListener("keyup", (e) => e.key === "Enter" && submitAnswer());
+</script>
+
+</body>
+</html>
